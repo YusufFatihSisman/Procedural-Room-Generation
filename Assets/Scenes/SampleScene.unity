@@ -173,6 +173,28 @@ MonoBehaviour:
   wallBrokePrefab: {fileID: 3059074274728173599, guid: 4fb26336f9d764746bfdf61dffd6c5da, type: 3}
   wallDoorPrefab: {fileID: 1886426666982282263, guid: 686f4c639d75b43498d9ff578024bca2, type: 3}
   doorPrefab: {fileID: 365549173425614416, guid: 832612442e9b02e478c21edee03d5c44, type: 3}
+  outerObjects:
+  - {fileID: 11400000, guid: 1c4fa094cd4034346a7eeaee8c5f2dc3, type: 2}
+  - {fileID: 11400000, guid: 98504cc60fcad5249ad06894386faddb, type: 2}
+  - {fileID: 11400000, guid: 60583478168b95940820e450507563cb, type: 2}
+  - {fileID: 11400000, guid: 74e308c606420cf46a5a440598d52467, type: 2}
+  - {fileID: 11400000, guid: 365fad1b9be1d0c4daece27abcc20310, type: 2}
+  innerObjects:
+  - {fileID: 11400000, guid: 2f8ae00890075dd4c8a62e1c44f08aaa, type: 2}
+  - {fileID: 11400000, guid: 7900888b0a393494ab36b0ee3dc44dc4, type: 2}
+  - {fileID: 11400000, guid: 2e976d79adc10d34091f44f7e0cef47b, type: 2}
+  - {fileID: 11400000, guid: 5570c4eb18adbd445a0bc8be8c51a5b2, type: 2}
+  - {fileID: 11400000, guid: bc48246a8caa02a4f84cf831ef6c5678, type: 2}
+  - {fileID: 11400000, guid: 91db07b33571bfe49a2cb6de87d0e5f1, type: 2}
+  - {fileID: 11400000, guid: 4a9f9719235d49e46b5d76a1fad33b28, type: 2}
+  - {fileID: 11400000, guid: 13038218349715544bc23342c169bb81, type: 2}
+  - {fileID: 11400000, guid: a284fbfb8cbe4b5499f6fe8d3191275e, type: 2}
+  - {fileID: 11400000, guid: 1e58c1c2efeb5934888535b276ddd0e8, type: 2}
+  - {fileID: 11400000, guid: 097612d6739891c42b4719ad3ca0541e, type: 2}
+  zoneChances:
+  - 0.212
+  - 0.291
+  - 0.244
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -260,7 +282,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalPosition: {x: -2.2388525, y: 3.7075922, z: -0.32039595}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

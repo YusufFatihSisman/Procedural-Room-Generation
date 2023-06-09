@@ -10,8 +10,10 @@ public class RoomGenerator : MonoBehaviour
     public GameObject wallBrokePrefab;
     public GameObject wallDoorPrefab;
     public GameObject doorPrefab;
-    public GameObject[] outerObjects;
-    public GameObject[] innerObjects;
+    public DecorationAsset[] outerObjects;
+    public DecorationAsset[] innerObjects;
+    [Range(0,1)]
+    public float[] zoneChances;
 
 
     private int FLOOR_FACTOR = 6;
@@ -194,30 +196,77 @@ public class RoomGenerator : MonoBehaviour
         for(int z = 0; z < sizeZ; z++){
             for(int x = 0; x < sizeX; x++){
                 if(cells[z, x].available){
-                    int randPlace = 0;
-                    randPlace = Random.Range(0, 3);
-                    if(randPlace > 0)
+                    cells[z, x].SetAvailable(false);
+                    float randPlace = 0f;
+                    randPlace = Random.Range(0f, 1.0f);
+                    if(randPlace > zoneChances[(int)cells[z, x].zone])
                         continue;
-                    GameObject choosenObject = ChooseObject(cells[z, x].side);  
+                    DecorationAsset choosenObject = ChooseObject(cells[z, x].side, cells[z, x].zone);  
                     if(choosenObject == null) // delete when add inside obejct placement
                         continue;
 
+                    Vector3 pos = CalculateObjectPosition(sizeZ, sizeX, z, x, cells[z, x].position, cells[z, x].side,choosenObject.area);
                     // CHECK OBJECT SIZE IF ITS BIGGER THAN THE CeLL SIZE CHANGE POSITION 
                     // SET AVAILABLE STATUS OF NEIGHBOR CELLS
-                    Instantiate(choosenObject, cells[z, x].position, Quaternion.Euler(new Vector3(0, 90*(int)cells[z, x].side, 0)), transform); 
+                    Instantiate(choosenObject.prefab, pos, Quaternion.Euler(new Vector3(0, 90*(int)cells[z, x].side, 0)), transform); 
 
                 }
             }
         }
     }
 
-    private GameObject ChooseObject(Side side){
+    private Vector3 CalculateObjectPosition(int sizeZ, int sizeX, int z, int x, Vector3 currentPos, Side side, Vector2 area){
+        float posx = currentPos.x;
+        float posz = currentPos.z;
+        if(area.x > 1){
+            if(side == Side.East || side == Side.West)
+                posz -= floorSize.x/2 * (area.x - floorSize.x/2);
+            else
+                posx += floorSize.x/2 * (area.x - floorSize.x/2);
+
+            for(int i = 1; i <= area.x - floorSize.x/2; i++){
+                if(side == Side.East || side == Side.West)
+                    if(z + i < sizeZ)
+                        cells[z+i, x].SetAvailable(false);
+                else
+                    if(x + i < sizeX)
+                        cells[z, x+i].SetAvailable(false);
+            }  
+        }
+        if(area.y > 1){
+            if(side == Side.East || side == Side.West)
+                posx += floorSize.z/2 * (area.y - floorSize.z/2);
+            else
+                posz -= floorSize.z/2 * (area.y - floorSize.z/2);
+
+            for(int i = 1; i <= area.y - floorSize.z/2; i++){
+                if(side == Side.East || side == Side.West)
+                    if(x + i < sizeX)
+                        cells[z, x+i].SetAvailable(false);
+                else
+                    if(z + i < sizeZ)
+                        cells[z+i, x].SetAvailable(false);
+            }  
+        }
+            
+        return new Vector3(posx, currentPos.y, posz);    
+    }
+
+    private DecorationAsset ChooseObject(Side side, Zone zone){
         int rand = 0;
         if(side == Side.Inside){
-            return null;
-            /*
-            rand = Random.Range(0, innerObjects.Length);
-            return innerObjects[rand];*/
+            if(zone == Zone.General){
+                rand = Random.Range(0, innerObjects.Length);    
+                return innerObjects[rand];
+            }else{
+                List<DecorationAsset> suitables = new List<DecorationAsset>();
+                foreach(DecorationAsset i in innerObjects){
+                    if(i.zone == zone)
+                        suitables.Add(i);
+                }
+                rand = Random.Range(0, suitables.Count);
+                return suitables[rand];  
+            }
         }
         else{
             rand = Random.Range(0, outerObjects.Length);
@@ -234,23 +283,35 @@ public class RoomGenerator : MonoBehaviour
         Inside,
     }
 
+    public enum Zone{
+        General,
+        Table,
+        Pillar
+    }
+
     public class Cell{
         public Vector3 position;
         public Side side;
         public bool available;
+        public Zone zone;
 
         public Cell(Vector3 pos, Side side = Side.Inside){
             position = pos;
             this.side = side;
             available = true;
+            zone = Zone.General;
         }
 
-        public void SetSide(Side side){
-            this.side = side;
+        public void SetSide(Side newSide){
+            side = newSide;
         }
 
         public void SetAvailable(bool newStatus){
             available = newStatus;
+        }
+
+        public void SetZone(Zone newZone){
+            zone = newZone;
         }
     }
 }
