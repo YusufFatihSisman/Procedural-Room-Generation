@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d325a9a0282c0cb4b98ac22ee8269730, type: 3}
   m_Name: TorchWall
   m_EditorClassIdentifier: 
-  prefab: {fileID: 6105409790037465807, guid: c3fde6b5d9040784299d3b255be99142, type: 3}
+  prefab: {fileID: 6236462277651675364, guid: c3fde6b5d9040784299d3b255be99142, type: 3}
   area: {x: 1, y: 1}
   zone: 0

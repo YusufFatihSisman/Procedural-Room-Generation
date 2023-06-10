@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d325a9a0282c0cb4b98ac22ee8269730, type: 3}
   m_Name: Barrel
   m_EditorClassIdentifier: 
-  prefab: {fileID: 8921643315938932964, guid: fe2adc6f7843c4745b78a09d8f31c143, type: 3}
+  prefab: {fileID: 9069884396614364666, guid: fe2adc6f7843c4745b78a09d8f31c143, type: 3}
   area: {x: 1, y: 1}
   zone: 0

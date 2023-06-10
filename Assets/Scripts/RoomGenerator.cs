@@ -103,8 +103,6 @@ public class RoomGenerator : MonoBehaviour
                 doorPlaced = 1;
                 wallPos.x += (wallDoorSize.x - wallSize.x)/2;
                 Instantiate(wallDoorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 0, 0)), transform);
-                wallPos.x += doorSize.x/2;
-                wallPos.y += doorSize.y/10;
                 Instantiate(doorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 0, 0)), transform);
                 
             }
@@ -120,9 +118,7 @@ public class RoomGenerator : MonoBehaviour
                 doorPlaced = 1;
                 wallPos.x += (wallDoorSize.x - wallSize.x)/2;
                 Instantiate(wallDoorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 0, 0)), transform);
-                wallPos.x += doorSize.x/2;
-                wallPos.y += doorSize.y/10;
-                Instantiate(doorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 0, 0)), transform);
+                Instantiate(doorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 180, 0)), transform);
             }
             else
                 Instantiate(wallPrefab, wallPos, Quaternion.Euler(new Vector3(0, 0, 0)), transform);
@@ -138,8 +134,6 @@ public class RoomGenerator : MonoBehaviour
                 doorPlaced = 1;
                 wallPos.z -= (wallDoorSize.x - wallSize.x)/2;
                 Instantiate(wallDoorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 90, 0)), transform);
-                wallPos.z -= doorSize.x/2;
-                wallPos.y += doorSize.y/10;
                 Instantiate(doorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 90, 0)), transform);
             }
             else
@@ -153,9 +147,7 @@ public class RoomGenerator : MonoBehaviour
                 doorPlaced = 1;
                 wallPos.z -= (wallDoorSize.x - wallSize.x)/2;
                 Instantiate(wallDoorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 90, 0)), transform);
-                wallPos.z -= doorSize.x/2;
-                wallPos.y += doorSize.y/10;
-                Instantiate(doorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 90, 0)), transform);
+                Instantiate(doorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 270, 0)), transform);
             }
             else
                 Instantiate(wallPrefab, wallPos, Quaternion.Euler(new Vector3(0, 90, 0)), transform);
@@ -183,12 +175,6 @@ public class RoomGenerator : MonoBehaviour
             }
         }
 
-        for(int z = 0; z < sizeZ; z++){
-            for(int x = 0; x < sizeX; x++){
-                Debug.Log(cells[z, x].position);
-            }
-        }
-
         FillCells(sizeZ, sizeX);
     }
 
@@ -196,12 +182,12 @@ public class RoomGenerator : MonoBehaviour
         for(int z = 0; z < sizeZ; z++){
             for(int x = 0; x < sizeX; x++){
                 if(cells[z, x].available){
-                    cells[z, x].SetAvailable(false);
                     float randPlace = 0f;
                     randPlace = Random.Range(0f, 1.0f);
                     if(randPlace > zoneChances[(int)cells[z, x].zone])
                         continue;
-                    DecorationAsset choosenObject = ChooseObject(cells[z, x].side, cells[z, x].zone);  
+                    DecorationAsset choosenObject = ChooseObject(cells[z, x].side, cells[z, x].zone);
+                    //check object area cells available status  
                     if(choosenObject == null) // delete when add inside obejct placement
                         continue;
 
@@ -215,40 +201,39 @@ public class RoomGenerator : MonoBehaviour
         }
     }
 
+   // private void arrangeZones(sizeZ, sizeX, z, x, cells[z, x].position, Vector2 area, Zone zone)
+
     private Vector3 CalculateObjectPosition(int sizeZ, int sizeX, int z, int x, Vector3 currentPos, Side side, Vector2 area){
         float posx = currentPos.x;
         float posz = currentPos.z;
         if(area.x > 1){
             if(side == Side.East || side == Side.West)
-                posz -= floorSize.x/2 * (area.x - floorSize.x/2);
+                posz -= floorSize.x/4 * (area.x - floorSize.x/2);
             else
-                posx += floorSize.x/2 * (area.x - floorSize.x/2);
-
-            for(int i = 1; i <= area.x - floorSize.x/2; i++){
-                if(side == Side.East || side == Side.West)
-                    if(z + i < sizeZ)
-                        cells[z+i, x].SetAvailable(false);
-                else
-                    if(x + i < sizeX)
-                        cells[z, x+i].SetAvailable(false);
-            }  
+                posx += floorSize.x/4 * (area.x - floorSize.x/2);
         }
         if(area.y > 1){
             if(side == Side.East || side == Side.West)
-                posx += floorSize.z/2 * (area.y - floorSize.z/2);
+                posx += floorSize.z/4 * (area.y - floorSize.z/2);
             else
-                posz -= floorSize.z/2 * (area.y - floorSize.z/2);
-
-            for(int i = 1; i <= area.y - floorSize.z/2; i++){
-                if(side == Side.East || side == Side.West)
-                    if(x + i < sizeX)
-                        cells[z, x+i].SetAvailable(false);
-                else
-                    if(z + i < sizeZ)
-                        cells[z+i, x].SetAvailable(false);
-            }  
+                posz -= floorSize.z/4 * (area.y - floorSize.z/2);
         }
-            
+
+        if(side == Side.East || side == Side.West)
+            for(int j = 0; j <= area.y - floorSize.z/2; j++){
+                for(int i = 0; i <= area.x - floorSize.x/2; i++){
+                    if(x+j < sizeX && z+i < sizeZ)
+                        cells[z+i, x+j].SetAvailable(false);
+                }
+            }
+        else
+            for(int j = 0; j <= area.y - floorSize.z/2; j++){
+                for(int i = 0; i <= area.x - floorSize.x/2; i++){
+                    if(x+i < sizeX && z+j < sizeZ)
+                        cells[z+j, x+i].SetAvailable(false);
+                }
+            }
+           
         return new Vector3(posx, currentPos.y, posz);    
     }
 
@@ -276,9 +261,9 @@ public class RoomGenerator : MonoBehaviour
     }
 
     public enum Side{
-        North,
-        West,
         South,
+        West,
+        North,
         East,
         Inside,
     }
@@ -286,6 +271,7 @@ public class RoomGenerator : MonoBehaviour
     public enum Zone{
         General,
         Table,
+        TableAround,
         Pillar
     }
 

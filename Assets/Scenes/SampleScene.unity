@@ -172,7 +172,7 @@ MonoBehaviour:
   wallCornerPrefab: {fileID: 4493508672257696673, guid: 02d73931b6301054abcefcde35a0c3b0, type: 3}
   wallBrokePrefab: {fileID: 3059074274728173599, guid: 4fb26336f9d764746bfdf61dffd6c5da, type: 3}
   wallDoorPrefab: {fileID: 1886426666982282263, guid: 686f4c639d75b43498d9ff578024bca2, type: 3}
-  doorPrefab: {fileID: 365549173425614416, guid: 832612442e9b02e478c21edee03d5c44, type: 3}
+  doorPrefab: {fileID: 8894098381477928904, guid: 832612442e9b02e478c21edee03d5c44, type: 3}
   outerObjects:
   - {fileID: 11400000, guid: 1c4fa094cd4034346a7eeaee8c5f2dc3, type: 2}
   - {fileID: 11400000, guid: 98504cc60fcad5249ad06894386faddb, type: 2}
@@ -192,7 +192,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1e58c1c2efeb5934888535b276ddd0e8, type: 2}
   - {fileID: 11400000, guid: 097612d6739891c42b4719ad3ca0541e, type: 2}
   zoneChances:
-  - 0.212
+  - 0.276
   - 0.291
   - 0.244
 --- !u!1 &705507993
