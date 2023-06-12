@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefab: {fileID: 1363474429565684778, guid: ebf30337a5ee22142828ef2059c98c1f, type: 3}
   area: {x: 2, y: 1}
-  zone: 1
+  zone: 0
+  aroundZone: 1

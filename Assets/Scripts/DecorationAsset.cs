@@ -7,4 +7,5 @@ public class DecorationAsset : ScriptableObject{
         public GameObject prefab;
         public Vector2 area;
         public RoomGenerator.Zone zone;
+        public RoomGenerator.Zone aroundZone;
 }

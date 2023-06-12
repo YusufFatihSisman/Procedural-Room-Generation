@@ -15,7 +15,6 @@ public class RoomGenerator : MonoBehaviour
     [Range(0,1)]
     public float[] zoneChances;
 
-
     private int FLOOR_FACTOR = 6;
     private int WALL_FACTOR = 2;
     private int CELL_FACTOR = 2;
@@ -163,14 +162,22 @@ public class RoomGenerator : MonoBehaviour
                     transform.position.y, 
                     transform.position.z - floorSize.z/4 - (z * floorSize.z/2)));
 
-                if(z == 0)
+                if(z == 0){
                     cells[z, x].SetSide(Side.North);
-                else if(z == sizeZ - 1)
+                    cells[z, x].SetEdge(true);    
+                }
+                else if(z == sizeZ - 1){
                     cells[z, x].SetSide(Side.South);
-                else if(x == 0)
+                    cells[z, x].SetEdge(true);
+                }
+                else if(x == 0){
                     cells[z, x].SetSide(Side.West);
-                else if(x == sizeX - 1)
-                    cells[z, x].SetSide(Side.East);   
+                    cells[z, x].SetEdge(true);
+                }
+                else if(x == sizeX - 1){
+                    cells[z, x].SetSide(Side.East);  
+                    cells[z, x].SetEdge(true); 
+                }
 
             }
         }
@@ -186,24 +193,69 @@ public class RoomGenerator : MonoBehaviour
                     randPlace = Random.Range(0f, 1.0f);
                     if(randPlace > zoneChances[(int)cells[z, x].zone])
                         continue;
-                    DecorationAsset choosenObject = ChooseObject(cells[z, x].side, cells[z, x].zone);
-                    //check object area cells available status  
+                    DecorationAsset choosenObject = ChooseObject(cells[z, x].zone, cells[z, x].edge);
                     if(choosenObject == null) // delete when add inside obejct placement
                         continue;
-
-                    Vector3 pos = CalculateObjectPosition(sizeZ, sizeX, z, x, cells[z, x].position, cells[z, x].side,choosenObject.area);
-                    // CHECK OBJECT SIZE IF ITS BIGGER THAN THE CeLL SIZE CHANGE POSITION 
-                    // SET AVAILABLE STATUS OF NEIGHBOR CELLS
+                    if(!IsObjectAreaFıt(sizeZ, sizeX, z, x, cells[z, x].side, choosenObject.area))
+                        continue;
+                    Vector3 pos = CalculateObjectPosition(sizeZ, sizeX, z, x, cells[z, x].position, cells[z, x].side, choosenObject.area, choosenObject.aroundZone);
                     Instantiate(choosenObject.prefab, pos, Quaternion.Euler(new Vector3(0, 90*(int)cells[z, x].side, 0)), transform); 
-
                 }
             }
         }
     }
 
-   // private void arrangeZones(sizeZ, sizeX, z, x, cells[z, x].position, Vector2 area, Zone zone)
+    private bool IsObjectAreaFıt(int sizeZ, int sizeX, int z, int x, Side side, Vector2 area){     
+        if(side == Side.East || side == Side.West)
+            for(int j = 0; j <= area.y - floorSize.z/2; j++){
+                for(int i = 0; i <= area.x - floorSize.x/2; i++){
+                    if(x+j < sizeX && z+i < sizeZ){
+                        if(cells[z+i, x+j].available == false)
+                            return false;        
+                    }       
+                    else
+                        return false;
+                }
+            }
+        else
+            for(int j = 0; j <= area.y - floorSize.z/2; j++){
+                for(int i = 0; i <= area.x - floorSize.x/2; i++){
+                    if(x+i < sizeX && z+j < sizeZ){
+                        if(cells[z+j, x+i].available == false)
+                            return false;
+                    }
+                    else
+                        return false;
+                }
+            }
+        return true;   
+    }
 
-    private Vector3 CalculateObjectPosition(int sizeZ, int sizeX, int z, int x, Vector3 currentPos, Side side, Vector2 area){
+    private void SetNeighboorZones(int sizeZ, int sizeX, int zTop, int zBot, int xLeft, int xRight, Vector2 area, Zone aroundZone){
+        if(aroundZone == Zone.General)
+            return;
+        for(int z = zTop - 2; z <= zBot + 2; z++){
+            for(int x = xLeft - 2; x <= xRight + 2; x++){
+                if(z < sizeZ && z >= 0 && x < sizeX && x >= 0){
+                    if(z == zTop - 2 || z == zBot + 2 || x == xLeft-2 || x == xRight + 2)
+                        cells[z,x].SetAvailable(false);
+                    else if(z == zBot + 1 && (x == xLeft-1 || x == xRight + 1))
+                        cells[z,x].SetAvailable(false);
+                    else
+                        cells[z,x].SetZone(aroundZone);
+                    
+                    if(z > zBot)
+                        cells[z, x].SetSide(Side.South);
+                    if(x > xRight)
+                        cells[z, x].SetSide(Side.East);
+                    if(x < xLeft)
+                        cells[z, x].SetSide(Side.West);
+                }
+            }
+        }
+    }
+
+    private Vector3 CalculateObjectPosition(int sizeZ, int sizeX, int z, int x, Vector3 currentPos, Side side, Vector2 area, Zone aroundZone){
         float posx = currentPos.x;
         float posz = currentPos.z;
         if(area.x > 1){
@@ -218,40 +270,39 @@ public class RoomGenerator : MonoBehaviour
             else
                 posz -= floorSize.z/4 * (area.y - floorSize.z/2);
         }
-
-        if(side == Side.East || side == Side.West)
-            for(int j = 0; j <= area.y - floorSize.z/2; j++){
-                for(int i = 0; i <= area.x - floorSize.x/2; i++){
+        int j = 0;
+        int i = 0;
+        if(side == Side.East || side == Side.West){
+            for(j = 0; j <= area.y - floorSize.z/2; j++){
+                for(i = 0; i <= area.x - floorSize.x/2; i++){
                     if(x+j < sizeX && z+i < sizeZ)
                         cells[z+i, x+j].SetAvailable(false);
                 }
             }
-        else
-            for(int j = 0; j <= area.y - floorSize.z/2; j++){
-                for(int i = 0; i <= area.x - floorSize.x/2; i++){
+            SetNeighboorZones(sizeZ, sizeX, z, z+i-1, x, x+j-1, area, aroundZone);
+        }
+        else{
+            for(j = 0; j <= area.y - floorSize.z/2; j++){
+                for(i = 0; i <= area.x - floorSize.x/2; i++){
                     if(x+i < sizeX && z+j < sizeZ)
                         cells[z+j, x+i].SetAvailable(false);
                 }
             }
-           
+            SetNeighboorZones(sizeZ, sizeX, z, z+j-1, x, x+i-1, area, aroundZone);
+        }   
         return new Vector3(posx, currentPos.y, posz);    
     }
 
-    private DecorationAsset ChooseObject(Side side, Zone zone){
+    private DecorationAsset ChooseObject(Zone zone, bool edge){
         int rand = 0;
-        if(side == Side.Inside){
-            if(zone == Zone.General){
-                rand = Random.Range(0, innerObjects.Length);    
-                return innerObjects[rand];
-            }else{
-                List<DecorationAsset> suitables = new List<DecorationAsset>();
-                foreach(DecorationAsset i in innerObjects){
-                    if(i.zone == zone)
-                        suitables.Add(i);
-                }
-                rand = Random.Range(0, suitables.Count);
-                return suitables[rand];  
+        if(!edge){
+            List<DecorationAsset> suitables = new List<DecorationAsset>();
+            foreach(DecorationAsset i in innerObjects){
+                if(i.zone == zone)
+                    suitables.Add(i);
             }
+            rand = Random.Range(0, suitables.Count);
+            return suitables[rand];  
         }
         else{
             rand = Random.Range(0, outerObjects.Length);
@@ -265,13 +316,11 @@ public class RoomGenerator : MonoBehaviour
         West,
         North,
         East,
-        Inside,
     }
 
     public enum Zone{
         General,
         Table,
-        TableAround,
         Pillar
     }
 
@@ -280,8 +329,9 @@ public class RoomGenerator : MonoBehaviour
         public Side side;
         public bool available;
         public Zone zone;
+        public bool edge;
 
-        public Cell(Vector3 pos, Side side = Side.Inside){
+        public Cell(Vector3 pos, Side side = Side.North, bool edge = false){
             position = pos;
             this.side = side;
             available = true;
@@ -298,6 +348,10 @@ public class RoomGenerator : MonoBehaviour
 
         public void SetZone(Zone newZone){
             zone = newZone;
+        }
+
+        public void SetEdge(bool edgeStatus){
+            edge = edgeStatus;
         }
     }
 }
