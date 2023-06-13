@@ -191,10 +191,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a284fbfb8cbe4b5499f6fe8d3191275e, type: 2}
   - {fileID: 11400000, guid: 1e58c1c2efeb5934888535b276ddd0e8, type: 2}
   - {fileID: 11400000, guid: 097612d6739891c42b4719ad3ca0541e, type: 2}
+  - {fileID: 11400000, guid: 59fdeaf93f8718b42890de9547ba762e, type: 2}
+  - {fileID: 11400000, guid: 43061bd6c91202a4890e7c6454362647, type: 2}
   zoneChances:
   - 1
-  - 0.661
-  - 0.244
+  - 1
+  - 1
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

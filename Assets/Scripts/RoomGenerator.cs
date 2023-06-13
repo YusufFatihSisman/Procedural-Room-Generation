@@ -218,8 +218,9 @@ public class RoomGenerator : MonoBehaviour
     }
 
     private void FillCells(int sizeZ, int sizeX){
-        for(int z = 0; z < sizeZ; z++){
-            for(int x = 0; x < sizeX; x++){
+        FillEdgeCells(sizeZ, sizeX);
+        for(int z = 1; z < sizeZ-1; z++){
+            for(int x = 1; x < sizeX-1; x++){
                 if(cells[z, x].available){
                     float randPlace = 0f;
                     randPlace = Random.Range(0f, 1.0f);
@@ -235,6 +236,88 @@ public class RoomGenerator : MonoBehaviour
                 }
             }
         }
+    }
+
+    private void FillEdgeCells(int sizeZ, int sizeX){
+        int z = 0;
+        int x = 0;
+        while(z < sizeZ){
+            for(x = 0; x < sizeX; x++){
+                float randPlace = 0f;
+                randPlace = Random.Range(0f, 1.0f);
+                if(randPlace > zoneChances[(int)cells[z, x].zone])
+                    continue;
+                DecorationAsset choosenObject = ChooseObject(cells[z, x].zone, cells[z, x].edge);
+                if(choosenObject == null)
+                    continue;
+                if(!IsObjectAreaFit(sizeZ, sizeX, z, x, cells[z, x].side, choosenObject.area))
+                    continue;
+                ClearEdgeFront(z, x, cells[z, x].side, choosenObject.area);
+                Vector3 pos = CalculateObjectPosition(sizeZ, sizeX, z, x, cells[z, x].position, cells[z, x].side, choosenObject.area, choosenObject.aroundZone);
+                pos = setTorch(pos, cells[z, x].side, choosenObject.prefab.name);
+                GameObject newObj = Instantiate(choosenObject.prefab, pos, Quaternion.Euler(new Vector3(0, 90*(int)cells[z, x].side, 0)), transform); 
+                if(choosenObject.prefab.name == "TorchWall"){
+                    Light lightComp = newObj.AddComponent<Light>();
+                    lightComp.color = Color.red;
+                }
+            }
+            z += sizeZ - 1;
+        }       
+        x = 0;
+        while(x < sizeX){
+            for(z = 0; z < sizeZ; z++){
+                float randPlace = 0f;
+                randPlace = Random.Range(0f, 1.0f);
+                if(randPlace > zoneChances[(int)cells[z, x].zone])
+                    continue;
+                DecorationAsset choosenObject = ChooseObject(cells[z, x].zone, cells[z, x].edge);
+                if(choosenObject == null)
+                    continue;
+                if(!IsObjectAreaFit(sizeZ, sizeX, z, x, cells[z, x].side, choosenObject.area))
+                    continue;
+                ClearEdgeFront(z, x, cells[z, x].side, choosenObject.area);
+                Vector3 pos = CalculateObjectPosition(sizeZ, sizeX, z, x, cells[z, x].position, cells[z, x].side, choosenObject.area, choosenObject.aroundZone);
+                pos = setTorch(pos, cells[z, x].side, choosenObject.prefab.name);
+                GameObject newObj = Instantiate(choosenObject.prefab, pos, Quaternion.Euler(new Vector3(0, 90*(int)cells[z, x].side, 0)), transform); 
+                if(choosenObject.prefab.name == "TorchWall"){
+                    Light lightComp = newObj.AddComponent<Light>();
+                    lightComp.color = Color.red;
+                }
+            }
+            x += sizeX - 1;
+        }
+
+    }
+
+    private Vector3 setTorch(Vector3 pos, Side side, string name){
+        if(name != "TorchWall")
+            return pos;
+
+        pos.y = wallSize.y/2;
+        if(side == Side.East)
+            pos.x += floorSize.x/4;
+        if(side == Side.West)
+            pos.x -= floorSize.x/4;   
+        if(side == Side.South)
+            pos.z -= floorSize.z/4;
+        if(side == Side.North)
+            pos.z += floorSize.z/4;
+        return pos;
+    }
+
+    private void ClearEdgeFront(int z, int x, Side side, Vector2 area){    
+        if(side == Side.South)
+            for(int i = 0; i <= area.x - floorSize.x/2; i++)
+                cells[z-1, x+i].SetAvailable(false);
+        else if(side == Side.North)
+            for(int i = 0; i <= area.x - floorSize.x/2; i++)
+                cells[z+1, x+i].SetAvailable(false);
+        else if(side == Side.East)
+            for(int i = 0; i <= area.x - floorSize.z/2; i++)
+                cells[z+i, x-1].SetAvailable(false);
+        else if(side == Side.West)
+            for(int i = 0; i <= area.x - floorSize.z/2; i++)
+                    cells[z+i, x+1].SetAvailable(false);
     }
 
     private bool IsObjectAreaFit(int sizeZ, int sizeX, int z, int x, Side side, Vector2 area){     
@@ -277,11 +360,14 @@ public class RoomGenerator : MonoBehaviour
                         cells[z,x].SetZone(aroundZone);
                     
                     if(z > zBot)
-                        cells[z, x].SetSide(Side.South);
+                        if(z != sizeZ - 1)
+                            cells[z, x].SetSide(Side.South);
                     if(x > xRight)
-                        cells[z, x].SetSide(Side.East);
+                        if(x != sizeX - 1)
+                            cells[z, x].SetSide(Side.East);
                     if(x < xLeft)
-                        cells[z, x].SetSide(Side.West);
+                        if(z != sizeX - 1)
+                            cells[z, x].SetSide(Side.West);
                 }
             }
         }
@@ -333,6 +419,8 @@ public class RoomGenerator : MonoBehaviour
                 if(i.zone == zone)
                     suitables.Add(i);
             }
+            if(suitables.Count == 0)
+                return null;
             rand = Random.Range(0, suitables.Count);
             return suitables[rand];  
         }

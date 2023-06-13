@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d325a9a0282c0cb4b98ac22ee8269730, type: 3}
-  m_Name: PotC
+  m_Name: PillarBroken
   m_EditorClassIdentifier: 
-  prefab: {fileID: 7393180332498942273, guid: 734b87a3fd6259147857b62d02068648, type: 3}
-  area: {x: 1, y: 1}
-  zone: 2
-  aroundZone: 0
+  prefab: {fileID: 1136838879520013149, guid: 434d1005844b58347aa46ed2873f9422, type: 3}
+  area: {x: 2, y: 2}
+  zone: 0
+  aroundZone: 2
