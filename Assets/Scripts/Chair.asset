@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d325a9a0282c0cb4b98ac22ee8269730, type: 3}
   m_Name: Chair
   m_EditorClassIdentifier: 
-  prefab: {fileID: 1604157163717313530, guid: 650466b3a65093845bde8525d3bc2042, type: 3}
+  prefab: {fileID: 4276184076546535210, guid: 650466b3a65093845bde8525d3bc2042, type: 3}
   area: {x: 1, y: 1}
   zone: 1
   aroundZone: 0

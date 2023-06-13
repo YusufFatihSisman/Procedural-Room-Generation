@@ -26,7 +26,10 @@ public class RoomGenerator : MonoBehaviour
     private Vector3 wallSize;
     private Vector3 wallDoorSize;
     private Vector3 wallCornerSize;
-    Cell[,] cells;
+    private Cell[,] cells;
+
+    private int doorSide;
+    private int doorCord; 
 
     // Start is called before the first frame update
     void Start()
@@ -69,10 +72,9 @@ public class RoomGenerator : MonoBehaviour
     // doorWall = 3 * floor
     // door = floor
     private void CreateAllWalls(int sizeZ, int sizeX){
-        int[] doorArr = {0, 0, 0, 0}; // North West South East
-        int doorSide = Random.Range(0, 4);
+        int[] doorArr = {0, 0, 0, 0}; // South West North East
+        doorSide = Random.Range(0, 4);
         doorArr[doorSide] = 1;
-        int doorCord;
         if(doorSide == doorArr[0]|| doorSide == doorArr[2])
             doorCord = Random.Range(1, sizeX/WALL_FACTOR - 1);
         else
@@ -95,10 +97,10 @@ public class RoomGenerator : MonoBehaviour
 
         for(int x = 0; x < sizeX / WALL_FACTOR; x++){
             //North
-            Vector3 wallPos = new Vector3(transform.position.x + wallSize.x/2 + (wallSize.x * x) + ((wallDoorSize.x - wallSize.x) * doorPlaced * doorArr[0]), 
+            Vector3 wallPos = new Vector3(transform.position.x + wallSize.x/2 + (wallSize.x * x) + ((wallDoorSize.x - wallSize.x) * doorPlaced * doorArr[2]), 
                                             transform.position.y , 
                                             transform.position.z + wallSize.z/2);
-            if(doorArr[0] == 1 && doorCord == x){
+            if(doorArr[2] == 1 && doorCord == x){
                 doorPlaced = 1;
                 wallPos.x += (wallDoorSize.x - wallSize.x)/2;
                 Instantiate(wallDoorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 0, 0)), transform);
@@ -109,11 +111,11 @@ public class RoomGenerator : MonoBehaviour
                 Instantiate(wallPrefab, wallPos, Quaternion.Euler(new Vector3(0, 0, 0)), transform);
         
             //South
-            wallPos = new Vector3(transform.position.x + wallSize.x/2 + (wallSize.x * x) + ((wallDoorSize.x - wallSize.x) * doorPlaced * doorArr[2]), 
+            wallPos = new Vector3(transform.position.x + wallSize.x/2 + (wallSize.x * x) + ((wallDoorSize.x - wallSize.x) * doorPlaced * doorArr[0]), 
                                     transform.position.y, 
                                     transform.position.z - doorSize.x * sizeZ - wallSize.z/2);
             
-            if(doorArr[2] == 1 && doorCord == x){
+            if(doorArr[0] == 1 && doorCord == x){
                 doorPlaced = 1;
                 wallPos.x += (wallDoorSize.x - wallSize.x)/2;
                 Instantiate(wallDoorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 0, 0)), transform);
@@ -133,7 +135,7 @@ public class RoomGenerator : MonoBehaviour
                 doorPlaced = 1;
                 wallPos.z -= (wallDoorSize.x - wallSize.x)/2;
                 Instantiate(wallDoorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 90, 0)), transform);
-                Instantiate(doorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 90, 0)), transform);
+                Instantiate(doorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 270, 0)), transform);
             }
             else
                 Instantiate(wallPrefab, wallPos, Quaternion.Euler(new Vector3(0, 90, 0)), transform);
@@ -146,7 +148,7 @@ public class RoomGenerator : MonoBehaviour
                 doorPlaced = 1;
                 wallPos.z -= (wallDoorSize.x - wallSize.x)/2;
                 Instantiate(wallDoorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 90, 0)), transform);
-                Instantiate(doorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 270, 0)), transform);
+                Instantiate(doorPrefab, wallPos, Quaternion.Euler(new Vector3(0, 90, 0)), transform);
             }
             else
                 Instantiate(wallPrefab, wallPos, Quaternion.Euler(new Vector3(0, 90, 0)), transform);
@@ -163,10 +165,14 @@ public class RoomGenerator : MonoBehaviour
                     transform.position.z - floorSize.z/4 - (z * floorSize.z/2)));
 
                 if(z == 0){
+                    if(x == 0 || x == sizeX - 1)
+                        cells[z, x].SetAvailable(false);
                     cells[z, x].SetSide(Side.North);
                     cells[z, x].SetEdge(true);    
                 }
                 else if(z == sizeZ - 1){
+                    if(x == 0 || x == sizeX - 1)
+                        cells[z, x].SetAvailable(false);
                     cells[z, x].SetSide(Side.South);
                     cells[z, x].SetEdge(true);
                 }
@@ -181,8 +187,34 @@ public class RoomGenerator : MonoBehaviour
 
             }
         }
-
+        ClearDoorFront(sizeZ, sizeX);
         FillCells(sizeZ, sizeX);
+    }
+
+    private void ClearDoorFront(int sizeZ, int sizeX){
+        int x = 0;
+        int z = 0;
+        if(doorSide == (int)Side.South || doorSide == (int)Side.North){
+            if(doorSide == (int)Side.South)
+                z = sizeZ -1;
+            else
+                z = 0;
+            
+            x = WALL_FACTOR * (int)floorSize.x * doorCord - 1;
+            for(int i = 0; i < (int)doorSize.x * 2; i++){
+                cells[z, x+i+2].SetAvailable(false);
+            }
+        }else{
+            if(doorSide == (int)Side.East)
+                x = sizeX -1;
+            else
+                x = 0;
+
+            z = WALL_FACTOR * (int)floorSize.z * doorCord - 1;
+            for(int i = 0; i < (int)doorSize.x * 2; i++){
+                cells[z+i+2, x].SetAvailable(false);
+            }
+        }
     }
 
     private void FillCells(int sizeZ, int sizeX){
@@ -194,9 +226,9 @@ public class RoomGenerator : MonoBehaviour
                     if(randPlace > zoneChances[(int)cells[z, x].zone])
                         continue;
                     DecorationAsset choosenObject = ChooseObject(cells[z, x].zone, cells[z, x].edge);
-                    if(choosenObject == null) // delete when add inside obejct placement
+                    if(choosenObject == null)
                         continue;
-                    if(!IsObjectAreaFıt(sizeZ, sizeX, z, x, cells[z, x].side, choosenObject.area))
+                    if(!IsObjectAreaFit(sizeZ, sizeX, z, x, cells[z, x].side, choosenObject.area))
                         continue;
                     Vector3 pos = CalculateObjectPosition(sizeZ, sizeX, z, x, cells[z, x].position, cells[z, x].side, choosenObject.area, choosenObject.aroundZone);
                     Instantiate(choosenObject.prefab, pos, Quaternion.Euler(new Vector3(0, 90*(int)cells[z, x].side, 0)), transform); 
@@ -205,7 +237,7 @@ public class RoomGenerator : MonoBehaviour
         }
     }
 
-    private bool IsObjectAreaFıt(int sizeZ, int sizeX, int z, int x, Side side, Vector2 area){     
+    private bool IsObjectAreaFit(int sizeZ, int sizeX, int z, int x, Side side, Vector2 area){     
         if(side == Side.East || side == Side.West)
             for(int j = 0; j <= area.y - floorSize.z/2; j++){
                 for(int i = 0; i <= area.x - floorSize.x/2; i++){
