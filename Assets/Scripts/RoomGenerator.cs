@@ -358,7 +358,7 @@ public class RoomGenerator : MonoBehaviour
                         else
                             cells[z,x].SetZone(Zone.Around);
                     }
-                    else if((z == zBot + 1 || z == zTop + 1) && (x == xLeft-1 || x == xRight + 1))
+                    else if((z == zBot + 1 || z == zTop - 1) && (x == xLeft-1 || x == xRight + 1))
                         cells[z,x].SetAvailable(false);
                     else if(((z == zTop - 1 || z == zBot + 1) && (x >= xLeft && x <= xRight)) 
                         || (x == xLeft - 1 || x == xRight + 1) && (z >= zTop && z <= zBot)){
@@ -372,6 +372,7 @@ public class RoomGenerator : MonoBehaviour
                                 if(z != sizeX - 1)
                                     cells[z, x].SetSide(Side.West);
                             cells[z,x].SetZone(aroundZone);
+                            Debug.Log(z.ToString() + "  " +  x.ToString());
                             FillCell(z, x, sizeZ, sizeX);
                         }
 
