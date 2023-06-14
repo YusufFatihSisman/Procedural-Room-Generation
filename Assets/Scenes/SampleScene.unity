@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
-  m_Sun: {fileID: 705507994}
+  m_Sun: {fileID: 0}
   m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
@@ -193,6 +193,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 097612d6739891c42b4719ad3ca0541e, type: 2}
   - {fileID: 11400000, guid: 59fdeaf93f8718b42890de9547ba762e, type: 2}
   - {fileID: 11400000, guid: 43061bd6c91202a4890e7c6454362647, type: 2}
+  - {fileID: 11400000, guid: 365fad1b9be1d0c4daece27abcc20310, type: 2}
   zoneChances:
   - 1
   - 1
