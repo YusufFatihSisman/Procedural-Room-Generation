@@ -32,6 +32,8 @@ public class RoomGenerator : MonoBehaviour
     private int doorSide;
     private int doorCord; 
 
+    private bool isRoomExist = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -42,13 +44,26 @@ public class RoomGenerator : MonoBehaviour
         wallDoorSize = wallDoorPrefab.GetComponent<MeshRenderer>().bounds.size;
         wallCornerSize = wallCornerPrefab.GetComponent<MeshRenderer>().bounds.size;
         
-        GenerateRoom();
+        //GenerateRoom();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetMouseButton(0)){
+            if(isRoomExist)
+                DestroyRoom();
+            GenerateRoom();
+        }
+        if (Input.GetMouseButton(1))
+            DestroyRoom();
+    }
+
+    private void DestroyRoom(){
+        foreach (Transform child in transform) {
+            GameObject.Destroy(child.gameObject);
+        }
+        isRoomExist = false;
     }
 
     private void GenerateRoom(){
@@ -58,12 +73,14 @@ public class RoomGenerator : MonoBehaviour
         CreateFloor(sizeZ, sizeX);
         CreateAllWalls(sizeZ, sizeX);
         CreateCells(sizeZ * CELL_FACTOR, sizeX * CELL_FACTOR);
-
+        isRoomExist = true;
     }
 
     private void SetCameraPosition(int sizeZ, int sizeX){
-        if(sizeZ <= sizeX)
+        if(sizeZ <= sizeX){
             cameraPos.position = new Vector3(transform.position.x + sizeX, sizeZ * 3, transform.position.z - sizeZ);
+            cameraPos.rotation = Quaternion.Euler(new Vector3(cameraPos.rotation.eulerAngles.x, 0, cameraPos.rotation.eulerAngles.z));
+        }
         else{
             cameraPos.position = new Vector3(transform.position.x + sizeX, sizeX * 3, transform.position.z - sizeZ);
             cameraPos.rotation = Quaternion.Euler(new Vector3(cameraPos.rotation.eulerAngles.x, 90, cameraPos.rotation.eulerAngles.z));
