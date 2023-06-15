@@ -167,6 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec3a81ea8f31c8040888ba0e3d95f02d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cameraPos: {fileID: 963194228}
   floorPrefab: {fileID: 1724516855178064143, guid: 0225bf17b5e8c784390318b3851d4994, type: 3}
   wallPrefab: {fileID: 1326053881194068019, guid: 477d8ed049b699b459a2c1842a24c25b, type: 3}
   wallCornerPrefab: {fileID: 4493508672257696673, guid: 02d73931b6301054abcefcde35a0c3b0, type: 3}
@@ -195,6 +196,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 43061bd6c91202a4890e7c6454362647, type: 2}
   - {fileID: 11400000, guid: 365fad1b9be1d0c4daece27abcc20310, type: 2}
   zoneChances:
+  - 1
   - 1
   - 1
   - 1

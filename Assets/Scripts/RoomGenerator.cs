@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class RoomGenerator : MonoBehaviour
 {
+    public Transform cameraPos;
     public GameObject floorPrefab;
     public GameObject wallPrefab;
     public GameObject wallCornerPrefab;
@@ -53,10 +54,20 @@ public class RoomGenerator : MonoBehaviour
     private void GenerateRoom(){
         int sizeZ = Random.Range(MIN_SIZE, MAX_SIZE) * FLOOR_FACTOR;
         int sizeX = Random.Range(MIN_SIZE, MAX_SIZE) * FLOOR_FACTOR;
+        SetCameraPosition(sizeZ, sizeX);
         CreateFloor(sizeZ, sizeX);
         CreateAllWalls(sizeZ, sizeX);
         CreateCells(sizeZ * CELL_FACTOR, sizeX * CELL_FACTOR);
 
+    }
+
+    private void SetCameraPosition(int sizeZ, int sizeX){
+        if(sizeZ <= sizeX)
+            cameraPos.position = new Vector3(transform.position.x + sizeX, sizeZ * 3, transform.position.z - sizeZ);
+        else{
+            cameraPos.position = new Vector3(transform.position.x + sizeX, sizeX * 3, transform.position.z - sizeZ);
+            cameraPos.rotation = Quaternion.Euler(new Vector3(cameraPos.rotation.eulerAngles.x, 90, cameraPos.rotation.eulerAngles.z));
+        }
     }
 
     private void CreateFloor(int sizeZ, int sizeX){
@@ -75,15 +86,15 @@ public class RoomGenerator : MonoBehaviour
         int[] doorArr = {0, 0, 0, 0}; // South West North East
         doorSide = Random.Range(0, 4);
         doorArr[doorSide] = 1;
-        if(doorSide == doorArr[0]|| doorSide == doorArr[2])
+        if(doorArr[0] == 1 || doorArr[2] == 1)
             doorCord = Random.Range(1, (sizeX/WALL_FACTOR) - 1);
         else
             doorCord = Random.Range(1, (sizeZ/WALL_FACTOR) - 1);
 
-        Debug.Log(sizeX.ToString() + "   " + sizeZ.ToString());
-        Debug.Log((sizeX/WALL_FACTOR) - 1);
-        Debug.Log((sizeZ/WALL_FACTOR) - 1);
         int doorPlaced = 0;
+        Debug.Log("SizeX: " + sizeX + "    SizeZ: " + sizeZ);
+        Debug.Log("Door Coordinate " + doorCord.ToString());
+        Debug.Log("Door Sides " + (Side)doorSide);
 
         // Left Top
         Vector3 cornerPos = new Vector3(transform.position.x - wallSize.z/2, transform.position.y , transform.position.z + wallSize.z/2);
@@ -343,16 +354,11 @@ public class RoomGenerator : MonoBehaviour
     private void SetNeighboorZones(int sizeZ, int sizeX, int zTop, int zBot, int xLeft, int xRight, Zone aroundZone){
         if(aroundZone == Zone.General)
             return;
-
-        if(aroundZone == Zone.Pillar){
-            Debug.Log(zTop.ToString() + "  " +  zBot.ToString() + "  " + xLeft.ToString() + "  " + xRight.ToString());
-        }
         for(int z = zTop - 2; z <= zBot + 2; z++){
             for(int x = xLeft - 2; x <= xRight + 2; x++){
                 if(z < sizeZ && z >= 0 && x < sizeX && x >= 0){
                     if(((x >= xLeft && x <= xRight) && (z == zTop - 2 || z == zBot + 2))
                         || (z >= zTop && z <= zBot) && (x == xLeft - 2 || x == xRight + 2)){
-                        //cells[z,x].SetAvailable(false);
                         if(aroundZone == Zone.Pillar)
                             cells[z,x].SetAvailable(false);
                         else
@@ -372,24 +378,9 @@ public class RoomGenerator : MonoBehaviour
                                 if(z != sizeX - 1)
                                     cells[z, x].SetSide(Side.West);
                             cells[z,x].SetZone(aroundZone);
-                            Debug.Log(z.ToString() + "  " +  x.ToString());
-                            FillCell(z, x, sizeZ, sizeX);
+                            if(cells[z,x].available)
+                                FillCell(z, x, sizeZ, sizeX);
                         }
-
-                    /*if((z == zTop - 1 && (x >= xLeft && x <= xRight)) || (z == zTop && x == xLeft - 1))
-                        if(cells[z, x].available){
-                            cells[z, x].SetZone(aroundZone);
-                            FillCell(z, x, sizeZ, sizeX);
-                        }*/
-
-                            
-
-                    //if(z < zTop || (z == zTop && x < xLeft))
-                    //    if(cells[z, x].available)
-                    //        FillCell(z, x, sizeZ, sizeX);
-                        //else if(cells[z, x].zone != Zone.General)
-                        //    FillCell(z, x, sizeZ, sizeX);
-
                 }
             }
         }
@@ -438,8 +429,11 @@ public class RoomGenerator : MonoBehaviour
         if(!edge){
             List<DecorationAsset> suitables = new List<DecorationAsset>();
             foreach(DecorationAsset i in innerObjects){
-                if(i.zone == zone)
+                if(i.zone == zone){
                     suitables.Add(i);
+                    if(i.prefab.name == "TorchWall")
+                        suitables.Add(i);
+                }
             }
             if(suitables.Count == 0)
                 return null;
