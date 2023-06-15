@@ -261,16 +261,6 @@ public class RoomGenerator : MonoBehaviour
 
     private void FillAllCells(int sizeZ, int sizeX){
         FillEdgeCells(sizeZ, sizeX);
-        Debug.Log(sizeZ.ToString()+ ", " + sizeX.ToString());
-        for(int z = 0; z < sizeZ; z++){
-            string str = "";
-            for(int x = 0; x < sizeX; x++){
-                //Debug.Log(z.ToString() + "," + x.ToString() + ": " + cells[z,x].available);
-                str += cells[z,x].available + " ";
-            }
-            Debug.Log(str);
-        }
-
         for(int z = 1; z < sizeZ-1; z++){
             for(int x = 1; x < sizeX-1; x++){
                 if(cells[z, x].available && cells[z,x].zone != Zone.Around){
@@ -422,9 +412,6 @@ public class RoomGenerator : MonoBehaviour
                                 if(x < xLeft)
                                     cells[z, x].SetSide(Side.West);
                                 cells[z,x].SetZone(aroundZone);
-                                // ayrı yerde yap
-                                /*if(cells[z,x].available)
-                                    FillCell(z, x, sizeZ, sizeX);*/
                             }
                 }
             }
@@ -445,12 +432,6 @@ public class RoomGenerator : MonoBehaviour
                 if(cells[zBot+1,x].available && !cells[zBot+1,x].edge)
                     FillCell(zBot+1, x, sizeZ, sizeX);
         }
-        /*
-        for(int z = zTop - 1; z <= zBot + 1; z++){
-            for(int x = xLeft - 1; x <= xRight + 1; x++){
-                
-            }
-        }*/
     }
 
     private Vector3 CalculateObjectPosition(int sizeZ, int sizeX, int z, int x, Vector3 currentPos, Side side, Vector2 area, Zone aroundZone){
@@ -496,7 +477,7 @@ public class RoomGenerator : MonoBehaviour
         if(!edge){
             List<DecorationAsset> suitables = new List<DecorationAsset>();
             foreach(DecorationAsset i in innerObjects){
-                if(i.zone == zone || (zone == Zone.Around && (i.zone == Zone.Table || i.zone == Zone.Pillar))){
+                if(i.zone == zone){
                     suitables.Add(i);
                     if(i.prefab.name == "TorchWall")
                         suitables.Add(i);
