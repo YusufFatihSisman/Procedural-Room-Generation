@@ -44,7 +44,7 @@ public class RoomGenerator : MonoBehaviour
         wallDoorSize = wallDoorPrefab.GetComponent<MeshRenderer>().bounds.size;
         wallCornerSize = wallCornerPrefab.GetComponent<MeshRenderer>().bounds.size;
         
-        //GenerateRoom();
+        GenerateRoom();
     }
 
     // Update is called once per frame
@@ -60,6 +60,7 @@ public class RoomGenerator : MonoBehaviour
     }
 
     private void DestroyRoom(){
+        System.Array.Clear(cells, 0, cells.Length);
         foreach (Transform child in transform) {
             GameObject.Destroy(child.gameObject);
         }
@@ -109,9 +110,6 @@ public class RoomGenerator : MonoBehaviour
             doorCord = Random.Range(1, (sizeZ/WALL_FACTOR) - 1);
 
         int doorPlaced = 0;
-        Debug.Log("SizeX: " + sizeX + "    SizeZ: " + sizeZ);
-        Debug.Log("Door Coordinate " + doorCord.ToString());
-        Debug.Log("Door Sides " + (Side)doorSide);
 
         // Left Top
         Vector3 cornerPos = new Vector3(transform.position.x - wallSize.z/2, transform.position.y , transform.position.z + wallSize.z/2);
@@ -226,31 +224,53 @@ public class RoomGenerator : MonoBehaviour
     private void ClearDoorFront(int sizeZ, int sizeX){
         int x = 0;
         int z = 0;
+        int x2 = 0;
+        int z2 = 0;
         if(doorSide == (int)Side.South || doorSide == (int)Side.North){
-            if(doorSide == (int)Side.South)
-                z = sizeZ -1;
-            else
+            if(doorSide == (int)Side.South){
+                z = sizeZ - 1;
+                z2 = sizeZ - 2;
+            }
+            else{
                 z = 0;
+                z2 = 1;
+            }
             
             x = WALL_FACTOR * (int)floorSize.x * doorCord - 1;
             for(int i = 0; i < (int)doorSize.x * 2; i++){
-                cells[z, x+i+2].SetAvailable(false);
+                cells[z, x+i+2].SetAvailable(false); 
+                cells[z2, x+i+2].SetAvailable(false);              
             }
         }else{
-            if(doorSide == (int)Side.East)
-                x = sizeX -1;
-            else
+            if(doorSide == (int)Side.East){
+                x = sizeX - 1;
+                x2 = sizeX - 2;
+            }
+            else{
                 x = 0;
+                x2 = 1;
+            }
 
             z = WALL_FACTOR * (int)floorSize.z * doorCord - 1;
             for(int i = 0; i < (int)doorSize.x * 2; i++){
                 cells[z+i+2, x].SetAvailable(false);
+                cells[z+i+2, x2].SetAvailable(false);
             }
         }
     }
 
     private void FillAllCells(int sizeZ, int sizeX){
         FillEdgeCells(sizeZ, sizeX);
+        Debug.Log(sizeZ.ToString()+ ", " + sizeX.ToString());
+        for(int z = 0; z < sizeZ; z++){
+            string str = "";
+            for(int x = 0; x < sizeX; x++){
+                //Debug.Log(z.ToString() + "," + x.ToString() + ": " + cells[z,x].available);
+                str += cells[z,x].available + " ";
+            }
+            Debug.Log(str);
+        }
+
         for(int z = 1; z < sizeZ-1; z++){
             for(int x = 1; x < sizeX-1; x++){
                 if(cells[z, x].available && cells[z,x].zone != Zone.Around){
@@ -261,6 +281,8 @@ public class RoomGenerator : MonoBehaviour
     }
 
     private void FillCell(int z, int x, int sizeZ, int sizeX){
+        if(!cells[z, x].available)
+            return;
         float randPlace = 0f;
         randPlace = Random.Range(0f, 1.0f);
         if(randPlace > zoneChances[(int)cells[z, x].zone])
@@ -268,9 +290,10 @@ public class RoomGenerator : MonoBehaviour
         DecorationAsset choosenObject = ChooseObject(cells[z, x].zone, cells[z, x].edge);
         if(choosenObject == null)
             return;
-        if(!IsObjectAreaFit(sizeZ, sizeX, z, x, cells[z, x].side, choosenObject.area, choosenObject.zone))
+        if(!IsObjectAreaFit(sizeZ, sizeX, z, x, cells[z, x].side, choosenObject.area, choosenObject.zone, cells[z, x].edge))
             return;
         Vector3 pos = CalculateObjectPosition(sizeZ, sizeX, z, x, cells[z, x].position, cells[z, x].side, choosenObject.area, choosenObject.aroundZone);
+        
         if(choosenObject.prefab.name == "TorchWall")
             pos = setTorch(pos, cells[z, x].side, cells[z,x].edge); 
         if(cells[z, x].edge)
@@ -335,15 +358,17 @@ public class RoomGenerator : MonoBehaviour
                 cells[z+i, x-1].SetAvailable(false);
         else if(side == Side.West)
             for(int i = 0; i <= area.x - floorSize.z/2; i++)
-                    cells[z+i, x+1].SetAvailable(false);
+                cells[z+i, x+1].SetAvailable(false);
     }
 
-    private bool IsObjectAreaFit(int sizeZ, int sizeX, int z, int x, Side side, Vector2 area, Zone zone){     
+    private bool IsObjectAreaFit(int sizeZ, int sizeX, int z, int x, Side side, Vector2 area, Zone zone, bool edge){     
         if(side == Side.East || side == Side.West)
             for(int j = 0; j <= area.y - floorSize.z/2; j++){
                 for(int i = 0; i <= area.x - floorSize.x/2; i++){
                     if(x+j < sizeX && z+i < sizeZ){
-                        if(cells[z+i, x+j].available == false)
+                        if(!cells[z+i, x+j].available)
+                            return false;
+                        if(!edge && cells[z+i, x+j].edge)
                             return false;
                         if(zone == Zone.General && cells[z+i, x+j].zone == Zone.Around)
                             return false;        
@@ -356,7 +381,9 @@ public class RoomGenerator : MonoBehaviour
             for(int j = 0; j <= area.y - floorSize.z/2; j++){
                 for(int i = 0; i <= area.x - floorSize.x/2; i++){
                     if(x+i < sizeX && z+j < sizeZ){
-                        if(cells[z+j, x+i].available == false)
+                        if(!cells[z+j, x+i].available)
+                            return false;
+                        if(!edge && cells[z+j, x+i].edge)
                             return false;
                         if(zone == Zone.General && cells[z+j, x+i].zone == Zone.Around)
                             return false;
@@ -374,33 +401,56 @@ public class RoomGenerator : MonoBehaviour
         for(int z = zTop - 2; z <= zBot + 2; z++){
             for(int x = xLeft - 2; x <= xRight + 2; x++){
                 if(z < sizeZ && z >= 0 && x < sizeX && x >= 0){
-                    if(((x >= xLeft && x <= xRight) && (z == zTop - 2 || z == zBot + 2))
-                        || (z >= zTop && z <= zBot) && (x == xLeft - 2 || x == xRight + 2)){
-                        if(aroundZone == Zone.Pillar)
-                            cells[z,x].SetAvailable(false);
-                        else
-                            cells[z,x].SetZone(Zone.Around);
-                    }
-                    else if((z == zBot + 1 || z == zTop - 1) && (x == xLeft-1 || x == xRight + 1))
-                        cells[z,x].SetAvailable(false);
-                    else if(((z == zTop - 1 || z == zBot + 1) && (x >= xLeft && x <= xRight)) 
-                        || (x == xLeft - 1 || x == xRight + 1) && (z >= zTop && z <= zBot)){
-                            if(z > zBot)
-                                if(z != sizeZ - 1)
-                                    cells[z, x].SetSide(Side.South);
-                            if(x > xRight)
-                                if(x != sizeX - 1)
-                                    cells[z, x].SetSide(Side.East);
-                            if(x < xLeft)
-                                if(z != sizeX - 1)
-                                    cells[z, x].SetSide(Side.West);
-                            cells[z,x].SetZone(aroundZone);
-                            if(cells[z,x].available)
-                                FillCell(z, x, sizeZ, sizeX);
+                    if(cells[z, x].available && !cells[z, x].edge)
+                        if(((x >= xLeft && x <= xRight) && (z == zTop - 2 || z == zBot + 2))
+                            || (z >= zTop && z <= zBot) && (x == xLeft - 2 || x == xRight + 2)){
+                            if(aroundZone == Zone.Pillar)
+                                cells[z,x].SetAvailable(false);
+                            else
+                                cells[z,x].SetZone(Zone.Around);
                         }
+                        else if((z == zBot + 1 || z == zTop - 1) && (x == xLeft-1 || x == xRight + 1))
+                            cells[z,x].SetAvailable(false);
+                        else if(((z == zTop - 1 || z == zBot + 1) && (x >= xLeft && x <= xRight)) 
+                            || (x == xLeft - 1 || x == xRight + 1) && (z >= zTop && z <= zBot)){
+                                if(z > zBot)
+                                    cells[z, x].SetSide(Side.South);
+                                if(z < zTop)
+                                    cells[z, x].SetSide(Side.North);
+                                if(x > xRight)
+                                    cells[z, x].SetSide(Side.East);
+                                if(x < xLeft)
+                                    cells[z, x].SetSide(Side.West);
+                                cells[z,x].SetZone(aroundZone);
+                                // ayrı yerde yap
+                                /*if(cells[z,x].available)
+                                    FillCell(z, x, sizeZ, sizeX);*/
+                            }
                 }
             }
         }
+        for(int z = zTop; z <= zBot; z++){
+            if(xLeft - 1 >= 0)
+                if(cells[z,xLeft-1].available && !cells[z,xLeft-1].edge)
+                    FillCell(z, xLeft-1, sizeZ, sizeX);
+            if(xRight + 1 < sizeX)
+                if(cells[z,xRight+1].available && !cells[z,xRight+1].edge)
+                    FillCell(z, xRight+1, sizeZ, sizeX);
+        }
+        for(int x = xLeft; x <= xRight; x++){
+            if(zTop - 1 >= 0)
+                if(cells[zTop-1,x].available && !cells[zTop-1,x].edge)
+                    FillCell(zTop-1, x, sizeZ, sizeX);
+            if(zBot + 1 < sizeZ)
+                if(cells[zBot+1,x].available && !cells[zBot+1,x].edge)
+                    FillCell(zBot+1, x, sizeZ, sizeX);
+        }
+        /*
+        for(int z = zTop - 1; z <= zBot + 1; z++){
+            for(int x = xLeft - 1; x <= xRight + 1; x++){
+                
+            }
+        }*/
     }
 
     private Vector3 CalculateObjectPosition(int sizeZ, int sizeX, int z, int x, Vector3 currentPos, Side side, Vector2 area, Zone aroundZone){
@@ -446,7 +496,7 @@ public class RoomGenerator : MonoBehaviour
         if(!edge){
             List<DecorationAsset> suitables = new List<DecorationAsset>();
             foreach(DecorationAsset i in innerObjects){
-                if(i.zone == zone){
+                if(i.zone == zone || (zone == Zone.Around && (i.zone == Zone.Table || i.zone == Zone.Pillar))){
                     suitables.Add(i);
                     if(i.prefab.name == "TorchWall")
                         suitables.Add(i);
@@ -485,7 +535,7 @@ public class RoomGenerator : MonoBehaviour
         public Zone zone;
         public bool edge;
 
-        public Cell(Vector3 pos, Side side = Side.North, bool edge = false){
+        public Cell(Vector3 pos, Side side = Side.South, bool edge = false){
             position = pos;
             this.side = side;
             available = true;
